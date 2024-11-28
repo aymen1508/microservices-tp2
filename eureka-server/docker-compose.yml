@@ -1,0 +1,68 @@
+services:
+  gatewayserver:
+    image: gatewayserver
+    build:
+      context: ../api-gateway
+      dockerfile: ../api-gateway/Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - eurekaserver
+      - configserver
+
+  eurekaserver:
+    image: eurekaserver
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8761:8761
+
+  configserver:
+    image: configserver
+    build:
+      context: ../config-server
+      dockerfile: ../config-server/Dockerfile
+    ports:
+      - 8888:8888
+    depends_on:
+      - eurekaserver
+
+  usermicroservice:
+    image: usermicroservice
+    build:
+      context: ../user-microservice
+      dockerfile: ../user-microservice/Dockerfile
+    ports:
+      - 8081:8081
+    depends_on:
+      - mysql
+      - eurekaserver
+      - configserver
+
+  productmicroservice:
+    image: productmicroservice
+    build:
+      context: ../product-microservice
+      dockerfile: ../product-microservice/Dockerfile
+    ports:
+      - 8082:8082
+    depends_on:
+      - mysql
+      - eurekaserver
+      - configserver
+
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: a
+      MYSQL_DATABASE: ecommerce
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
+    name: mysql-data
+    external: true
